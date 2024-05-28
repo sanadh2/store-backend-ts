@@ -152,7 +152,6 @@ const validate = (shoe: any) => {
     price: Joi.number().required(),
     isInInventory: Joi.boolean().required(),
     itemsLeft: Joi.number().required(),
-    imageUrl: Joi.string().required(),
   });
   return schema.validate(shoe);
 };

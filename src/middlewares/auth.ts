@@ -17,8 +17,12 @@ const ensureAuthenticated = asyncWrapper(
       next(setError("Please log in and try again", 401));
     }
     try {
-      const decode = jwt.verify(token, SECRET_KEY) as { userID: string };
+      const decode = jwt.verify(token, SECRET_KEY) as {
+        userID: string;
+        userRole: string;
+      };
       req.userID = decode.userID;
+      req.userRole = decode.userRole;
       next();
     } catch (error: any) {
       if (error instanceof TokenExpiredError) {
@@ -41,7 +45,16 @@ const ensureAuthenticated = asyncWrapper(
     }
   }
 );
+const ensureAdmin = (
+  req: RequestWithUser,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.userRole !== "admin") {
+    return res.status(403).json({ message: "Access denied. Admins only." });
+  }
+  next();
+};
+export { ensureAuthenticated, ensureAdmin };
 
-const Auth = { ensureAuthenticated };
-
-export default Auth;
+export default { ensureAuthenticated, ensureAdmin };

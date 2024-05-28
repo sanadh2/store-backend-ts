@@ -9,7 +9,7 @@ import {
 import { setError } from "../utils/customError";
 import asyncWrapper from "../utils/asyncWrapper";
 import { isValidObjectId } from "mongoose";
-import deleteAvatar from "../utils/deleteAvatar";
+import deleteImage from "../utils/deleteImage";
 import path from "path";
 
 export const user = asyncWrapper(
@@ -17,7 +17,7 @@ export const user = asyncWrapper(
     const { userID } = req.params;
     if (!isValidObjectId(userID)) next(setError("invalid user id", 400));
     const user = await User.findById(userID).select("-password");
-    return res.status(200).json({ success: true, user });
+    return res.status(200).json({ success: true, user, message: "user found" });
   }
 );
 
@@ -31,7 +31,9 @@ export const getUser = asyncWrapper(
     if (!user) {
       return next(setError("User not found", 404));
     }
-    return res.status(200).json({ success: false, user });
+    return res
+      .status(200)
+      .json({ success: false, user, messgage: "user found" });
   }
 );
 
@@ -40,7 +42,7 @@ export const updateUser = asyncWrapper(
     const userID = req.userID;
     const avatarFile = req.file;
     if (!userID) {
-      if (avatarFile) deleteAvatar(avatarFile.filename);
+      if (avatarFile) deleteImage(avatarFile.filename);
       return next(setError("something is fishy", 400));
     }
     const {
@@ -55,7 +57,7 @@ export const updateUser = asyncWrapper(
       address3,
     } = req.body;
     if (!isValidObjectId(userID)) {
-      if (avatarFile) deleteAvatar(avatarFile.filename);
+      if (avatarFile) deleteImage(avatarFile.filename);
       return next(setError("invalid ID", 401));
     }
     const user = await User.findById(userID);
@@ -81,7 +83,7 @@ export const updateUser = asyncWrapper(
         });
         user.address1 = newAddress;
       } catch (error) {
-        if (avatarFile) deleteAvatar(avatarFile.filename);
+        if (avatarFile) deleteImage(avatarFile.filename);
 
         return next(setError("Invalid address1", 400));
       }
@@ -93,7 +95,7 @@ export const updateUser = asyncWrapper(
         });
         user.address2 = newAddress;
       } catch (error) {
-        if (avatarFile) deleteAvatar(avatarFile.filename);
+        if (avatarFile) deleteImage(avatarFile.filename);
 
         return next(setError("Invalid address2", 400));
       }
@@ -106,7 +108,7 @@ export const updateUser = asyncWrapper(
         });
         user.address3 = newAddress;
       } catch (error) {
-        if (avatarFile) deleteAvatar(avatarFile.filename);
+        if (avatarFile) deleteImage(avatarFile.filename);
         return next(setError("Invalid address3", 400));
       }
 
@@ -115,7 +117,7 @@ export const updateUser = asyncWrapper(
       user.avatar = fileUrl;
     }
     await user.save();
-    return res.status(200).json({ success: true, msg: "User created" });
+    return res.status(200).json({ success: true, message: "user updated" });
   }
 );
 

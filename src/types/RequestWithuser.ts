@@ -3,6 +3,7 @@ import { JwtPayload } from "jsonwebtoken";
 
 interface RequestWithUser extends Request {
   userID?: string | JwtPayload;
+  userRole?: string | JwtPayload;
 }
 
 interface ReQuestWithFile extends Request {

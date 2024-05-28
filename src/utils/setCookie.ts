@@ -1,9 +1,12 @@
 import { Response } from "express";
 import JWT from "jsonwebtoken";
 
-const setCookie = async (userID: string, res: Response) => {
+const setCookie = async (
+  data: { userID: string; userRole: "user" | "admin" },
+  res: Response
+) => {
   try {
-    const token = getJwtToken(userID);
+    const token = getJwtToken(data);
     if (!token) {
       throw new Error("Failed to generate JWT token.");
     }
@@ -19,10 +22,10 @@ const setCookie = async (userID: string, res: Response) => {
   }
 };
 
-function getJwtToken(userID: string) {
+function getJwtToken(data: { userID: string; userRole: "user" | "admin" }) {
   const secretKey: string = process.env.JWT_SECRET_KEY!;
 
-  return JWT.sign({ userID }, secretKey, {
+  return JWT.sign({ userID: data.userID, userRole: data.userRole }, secretKey, {
     expiresIn: process.env.JWT_EXPIRES,
   });
 }

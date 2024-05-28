@@ -19,7 +19,7 @@ import isDisposableEmail from "../utils/isDisposibleEmail";
 import path from "path";
 import JWT from "jsonwebtoken";
 import mongoose from "mongoose";
-import deleteAvatar from "../utils/deleteAvatar";
+import deleteAvatar from "../utils/deleteImage";
 
 export const signIn = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -44,8 +44,14 @@ export const signIn = asyncWrapper(
     }
     user.failedLoginAttempts = 0;
     await user.save();
-    const token = await setCookie(user._id.toString(), res);
-    res.status(200).json({ success: true, token });
+
+    const token = await setCookie(
+      { userID: user._id.toString(), userRole: user.role },
+      res
+    );
+    res
+      .status(200)
+      .json({ success: true, token, message: `${user.name} logged in` });
   }
 );
 
@@ -230,8 +236,9 @@ export const signOut = asyncWrapper(
 export const refreshToken = asyncWrapper(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const userID = String(req.userID);
+    const userRole = String(req.userRole) === "admin" ? "admin" : "user";
     if (!userID) return next(setError("something went wrong", 400));
-    await setCookie(userID, res);
+    await setCookie({ userID, userRole }, res);
     next();
   }
 );
