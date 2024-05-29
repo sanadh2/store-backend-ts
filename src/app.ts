@@ -8,6 +8,7 @@ import bodyParser from "body-parser";
 import { userRouter, authRouter } from "./routes/routes";
 import { errorHandler } from "./middlewares/ErrorHandler";
 import notFound from "./middlewares/notFound";
+import { initialsedRedisClient } from "./utils/redisClient";
 const app = express();
 
 app.use(cookieParser());
@@ -22,6 +23,8 @@ app.use(
     credentials: true,
   })
 );
+
+initialsedRedisClient();
 
 app.use((req, res, next) => {
   // Set the header based on your requirements

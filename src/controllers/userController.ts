@@ -33,7 +33,7 @@ export const getUser = asyncWrapper(
     }
     return res
       .status(200)
-      .json({ success: false, user, messgage: "user found" });
+      .json({ success: true, user, messgage: "user found" });
   }
 );
 

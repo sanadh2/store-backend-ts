@@ -8,11 +8,24 @@ interface IReview extends Document {
     email: string;
     _id: Schema.Types.ObjectId;
   };
-  message: string;
+  title: string;
+  message?: string;
   rating: number;
   createdAt: Date;
   updatedAt: Date;
+  _id: Schema.Types.ObjectId;
 }
+
+type ReviewType = {
+  reviewer: {
+    name: string;
+    email: string;
+    _id: Schema.Types.ObjectId;
+  };
+  title: string;
+  message?: string;
+  rating: number;
+};
 
 const reviewSchema = new Schema<IReview>(
   {
@@ -42,6 +55,11 @@ const reviewSchema = new Schema<IReview>(
       max: [5, "maximum rating is 5"],
       required: [true, "please enter the rating"],
     },
+    title: {
+      type: String,
+      required: [true, "please enter the title"],
+      trim: true,
+    },
   },
   { timestamps: true }
 );
@@ -56,7 +74,7 @@ interface IShoe extends Document {
   isInInventory: boolean;
   itemsLeft: number;
   imageUrl: string;
-  reviews: Schema.Types.ObjectId[];
+  reviews: IReview[];
   reviewsLength: number;
   createdAt: Date;
   updatedAt: Date;
@@ -156,4 +174,4 @@ const validate = (shoe: any) => {
   return schema.validate(shoe);
 };
 
-export { Shoe, validate };
+export { Shoe, validate, ReviewType, Review };
