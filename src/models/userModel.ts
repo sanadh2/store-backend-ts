@@ -125,22 +125,10 @@ const userSchema = new mongoose.Schema<IUser>(
     address1: { type: addressSchema, required: true },
     address2: { type: addressSchema, required: false },
     address3: { type: addressSchema, required: false },
-    cartList: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
     cartLength: {
       type: Number,
       default: 0,
     },
-    orders: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Order",
-      },
-    ],
     ordersLength: {
       type: Number,
       default: 0,

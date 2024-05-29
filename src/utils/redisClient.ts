@@ -35,6 +35,7 @@ function generateCacheKey(req: RequestWithUserandFile, method: string = "GET") {
     body: req.body,
     params: req.params,
     userID: req.userID,
+    url: req.originalUrl,
   };
   return `${type}-${req.path}/${objectHash.sha1(reqDatatoHash)}`;
 }

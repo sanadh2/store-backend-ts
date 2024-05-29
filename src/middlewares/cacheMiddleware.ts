@@ -13,7 +13,7 @@ function setCache(options: { EX: number } = { EX: 3600 }) {
   ) => {
     if (redisClient?.isOpen) {
       const key = generateCacheKey(req, req.method);
-
+      console.log(key);
       const cachedValue = await redisClient.get(key);
 
       if (cachedValue) {
@@ -46,6 +46,7 @@ function invalidateCacheMiddleware(
 ) {
   // Invalidate the cache for the cache key
   const key = generateCacheKey(req);
+  console.log(key);
   redisClient?.del(key);
   next();
 }

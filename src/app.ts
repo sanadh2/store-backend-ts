@@ -5,7 +5,13 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { userRouter, authRouter } from "./routes/routes";
+import {
+  userRouter,
+  authRouter,
+  shoeRouter,
+  reviewRouter,
+  cartRouter,
+} from "./routes/routes";
 import { errorHandler } from "./middlewares/ErrorHandler";
 import notFound from "./middlewares/notFound";
 import { initialsedRedisClient } from "./utils/redisClient";
@@ -24,8 +30,6 @@ app.use(
   })
 );
 
-initialsedRedisClient();
-
 app.use((req, res, next) => {
   // Set the header based on your requirements
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin"); // or 'same-site' if needed
@@ -42,7 +46,10 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/users/", userRouter);
-app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/auth/", authRouter);
+app.use("/api/v1/products/", shoeRouter);
+app.use("/api/v1/reviews/", reviewRouter);
+app.use("/api/v1/carts/", cartRouter);
 
 app.use(errorHandler);
 app.use(notFound);

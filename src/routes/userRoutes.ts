@@ -8,7 +8,7 @@ import Cache from "../middlewares/cacheMiddleware";
 
 router.use(Auth.ensureAuthenticated);
 
-router.get("/me", Cache.setCache, getUser);
+router.get("/me", Cache.setCache(), getUser);
 router.get("/hello", getUser);
 
 router.get("/:userID", user);
