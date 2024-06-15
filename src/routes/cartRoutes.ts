@@ -13,7 +13,7 @@ import auth from "../middlewares/auth";
 const router = Router();
 
 router.use(auth.ensureAuthenticated);
-router.get("/me", setCache(), getCart);
+router.get("/me", getCart);
 router.post("/", invalidateCacheMiddleware, addToCart);
 router.delete("/:productID", invalidateCacheMiddleware, deleteFromCart);
 router.patch("/:productID", invalidateCacheMiddleware, updateQuantity);

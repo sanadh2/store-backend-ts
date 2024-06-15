@@ -20,6 +20,7 @@ import path from "path";
 import JWT from "jsonwebtoken";
 import mongoose from "mongoose";
 import deleteAvatar from "../utils/deleteImage";
+import { newUserValidator } from "../validators/userValidator";
 
 export const signIn = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -57,43 +58,27 @@ export const signIn = asyncWrapper(
 
 export const signUp = asyncWrapper(
   async (req: ReQuestWithFile, res: Response, next: NextFunction) => {
-    const {
-      name,
-      email,
-      password,
-      phoneNumber,
-      street,
-      city,
-      state,
-      country,
-      zipCode,
-      houseNumber,
-      gender,
-    } = req.body;
     const avatarFile = req.file;
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !phoneNumber ||
-      !street ||
-      !city ||
-      !state ||
-      !country ||
-      !zipCode ||
-      !houseNumber
-    ) {
+    const isValidUser = newUserValidator({
+      ...req.body,
+      avatar: avatarFile?.filename,
+    });
+
+    if (isValidUser.error) {
       if (avatarFile) {
         deleteAvatar(avatarFile.filename);
       }
-      return next(setError("Please provide all required fields", 400));
+
+      return next(setError(isValidUser.error.message, 400));
     }
+    console.log("isValid User", isValidUser);
+
     const isUserExist = await User.findOne({
       $or: [
         {
-          email,
+          email: req.body.email,
         },
-        { phoneNumber },
+        { phoneNumber: req.body.phoneNumber },
       ],
     });
 
@@ -116,73 +101,25 @@ export const signUp = asyncWrapper(
 
       return next(setError("Please activate your account", 400));
     }
-    const isDisposable = await isDisposableEmail(email);
+    const isDisposable = await isDisposableEmail(req.body.email);
     if (isDisposable) {
       return next(setError("Please provide a valid email", 400));
     }
-    const user: {
-      name: string;
-      email: string;
-      password: string;
-      phoneNumber: number;
-      avatar?: string;
-      gender: "male" | "female" | "others";
-      address1: {
-        street: string;
-        city: string;
-        state: string;
-        country: string;
-        zipCode: string;
-        houseNumber: string;
-        phoneNumber: number;
-      };
-    } = {
-      name: name,
-      email: email,
-      password: password,
-      phoneNumber: phoneNumber,
-      gender: gender,
-      address1: {
-        street: street,
-        city: city,
-        state: state,
-        country: country,
-        zipCode: zipCode,
-        houseNumber: houseNumber,
-        phoneNumber: phoneNumber,
-      },
-    };
 
-    if (avatarFile) {
-      const fileUrl = path.join(avatarFile.filename);
-      user.avatar = fileUrl;
-    }
-
-    const isUserValidated = validateUser(user);
-    if (isUserValidated.error) {
-      if (avatarFile) {
-        deleteAvatar(avatarFile.filename);
-      }
-      return next(
-        setError(
-          isUserValidated.error.details
-            .map((details) => details.message)
-            .join(". "),
-          400
-        )
-      );
-    }
     const userCreated = new User({
-      ...user,
-      avatar: user.avatar,
+      avatar: avatarFile ? path.join(avatarFile.filename) : undefined,
+      ...req.body,
     });
 
-    console.log(userCreated);
     const userID = userCreated._id.toString();
 
     const activationToken = createActivationToken(userID);
     const activationURL = `${process.env.CLIENT_URL}/auth/activate/${activationToken}/`;
-    await sendMail(user.email, "Please Activate Your Account", activationURL);
+    await sendMail(
+      req.body.email,
+      "Please Activate Your Account",
+      activationURL
+    );
     await userCreated.save();
     return res.status(200).json({
       success: true,
@@ -238,7 +175,9 @@ export const refreshToken = asyncWrapper(
     const userID = String(req.userID);
     const userRole = String(req.userRole) === "admin" ? "admin" : "user";
     if (!userID) return next(setError("something went wrong", 400));
-    await setCookie({ userID, userRole }, res);
-    next();
+    const token = await setCookie({ userID, userRole }, res);
+    return res
+      .status(200)
+      .json({ success: true, message: "refresh token updated", token });
   }
 );

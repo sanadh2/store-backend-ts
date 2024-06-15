@@ -11,7 +11,9 @@ export const errorHandler = (
   console.log("error name: ", err.name);
 
   if (err instanceof CustomError)
-    return res.status(400).json({ success: false, message: err.message });
+    return res
+      .status(err.statusCode)
+      .json({ success: false, message: err.message });
   if (err instanceof Error.ValidationError) {
     console.log("validationerrors", JSON.stringify(err.message));
     const errors = err.message;
@@ -21,7 +23,7 @@ export const errorHandler = (
   }
   if (err instanceof Error.CastError) {
     console.log("CastError errors", JSON.stringify(err));
-    console.log();
+
     return res.status(400).json({
       success: false,
       message: `${err.path} is not a valid ${err.kind}`,

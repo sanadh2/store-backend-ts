@@ -27,7 +27,7 @@ export const addToCart = asyncWrapper(
     if (quantity >= 5) return next(setError("quantity atmost 5", 400));
 
     const isProductInCart = await Cart.findOne({
-      userID: userID,
+      user: userID,
       product: productID,
     });
     if (isProductInCart) return next(setError("product already in cart", 400));
@@ -38,7 +38,7 @@ export const addToCart = asyncWrapper(
     if (!user) return next(setError("something went wrong", 400));
 
     const cartItem = new Cart({
-      userID: userID,
+      user: userID,
       product: productID,
       quantity: quantity,
     });
@@ -60,11 +60,12 @@ export const addToCart = asyncWrapper(
 export const getCart = asyncWrapper(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const userID = req.userID;
-    if (userID) {
-      next(setError("something went wrong", 400));
+    if (!userID) {
+      return next(setError("something went wrong", 400));
     }
-    const cart = await Cart.find({ userID });
-    console.log(cart);
+    const cart = await Cart.find({ user: userID }).populate({
+      path: "product",
+    });
     return res
       .status(200)
       .json({ success: true, message: "cart retrieved", cart });
@@ -79,7 +80,10 @@ export const deleteFromCart = asyncWrapper(
     if (!productID) return next(setError("please provide product id", 400));
     if (!isValidObjectId(productID))
       return next(setError("Invalid product id", 400));
-    const cart = await Cart.findOneAndDelete({ userID, product: productID });
+    const cart = await Cart.findOneAndDelete({
+      user: userID,
+      product: productID,
+    });
     if (!cart) return next(setError("product not found in cart", 400));
     return res
       .status(200)
@@ -100,7 +104,7 @@ export const updateQuantity = asyncWrapper(
     if (quantity <= 0) return next(setError("quantity atleast 1", 400));
     if (quantity >= 5) return next(setError("quantity atmost 5", 400));
     const cart = await Cart.findOneAndUpdate(
-      { userID, product: productID },
+      { user: userID, product: productID },
       { quantity: quantity }
     );
     if (!cart) return next(setError("product not found in cart", 400));

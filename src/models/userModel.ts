@@ -36,9 +36,7 @@ interface IUser extends mongoose.Document, IUserMethods {
   gender: "male" | "female" | "others";
   avatar?: string;
   phoneNumber: number;
-  cartList: mongoose.Schema.Types.ObjectId[];
   cartLength: number;
-  orders: mongoose.Schema.Types.ObjectId[];
   ordersLength: number;
   address1: IAddress;
   address2?: IAddress;
@@ -136,10 +134,12 @@ const userSchema = new mongoose.Schema<IUser>(
     accountLockedUntil: {
       type: Date,
       default: null,
+      select: false,
     },
     failedLoginAttempts: {
       type: Number,
       default: 0,
+      select: false,
     },
     active: {
       type: Boolean,

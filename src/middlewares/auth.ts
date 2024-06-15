@@ -14,13 +14,16 @@ const ensureAuthenticated = asyncWrapper(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const token = req.cookies.token;
     if (!token) {
-      next(setError("Please log in and try again", 401));
+      return next(setError("Please log in and try again", 403));
     }
     try {
       const decode = jwt.verify(token, SECRET_KEY) as {
         userID: string;
         userRole: string;
       };
+
+      if (!decode.userID || !decode.userRole)
+        return next(setError("something went wrong", 400));
       req.userID = decode.userID;
       req.userRole = decode.userRole;
       next();

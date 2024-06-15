@@ -24,13 +24,18 @@ export const user = asyncWrapper(
 export const getUser = asyncWrapper(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const userID = req.userID;
+
     if (!userID) {
       return next(setError("something went wrong", 400));
     }
+
+    if (!isValidObjectId(userID))
+      return next(setError("invalid id, \t" + userID, 400));
     const user = await User.findById(userID).select("-password");
     if (!user) {
       return next(setError("User not found", 404));
     }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     return res
       .status(200)
       .json({ success: true, user, messgage: "user found" });
@@ -155,3 +160,21 @@ const updateAddress = (
   };
   return address;
 };
+
+export const allUsers = asyncWrapper(
+  async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    const userID = req.userID;
+    if (!userID) return next(setError("something went wrong", 400));
+
+    if (!isValidObjectId(userID)) {
+      return next(setError("something went wrong", 401));
+    }
+
+    const user = await User.findById(userID);
+    if (!user) return next(setError("something went wrong", 401));
+    if (user.role !== "admin") return next(setError("unauthorized", 403));
+
+    const users = await User.find();
+    return res.status(200).json({ success: true, users });
+  }
+);

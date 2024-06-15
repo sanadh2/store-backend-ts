@@ -11,6 +11,7 @@ import {
   shoeRouter,
   reviewRouter,
   cartRouter,
+  orderRouter,
 } from "./routes/routes";
 import { errorHandler } from "./middlewares/ErrorHandler";
 import notFound from "./middlewares/notFound";
@@ -38,7 +39,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use("/", express.static("uploads"));
+app.use("/api/v1/", express.static("uploads"));
 app.use(morgan("dev"));
 
 app.get("/", (req, res) => {
@@ -50,7 +51,7 @@ app.use("/api/v1/auth/", authRouter);
 app.use("/api/v1/products/", shoeRouter);
 app.use("/api/v1/reviews/", reviewRouter);
 app.use("/api/v1/carts/", cartRouter);
-
+app.use("/api/v1/orders/", orderRouter);
 app.use(errorHandler);
 app.use(notFound);
 export default app;

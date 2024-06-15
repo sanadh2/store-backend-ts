@@ -37,7 +37,7 @@ function generateCacheKey(req: RequestWithUserandFile, method: string = "GET") {
     userID: req.userID,
     url: req.originalUrl,
   };
-  return `${type}-${req.path}/${objectHash.sha1(reqDatatoHash)}`;
+  return `${req.originalUrl}/${objectHash.sha1(reqDatatoHash)}`;
 }
 
 export { initialsedRedisClient, generateCacheKey, redisClient };

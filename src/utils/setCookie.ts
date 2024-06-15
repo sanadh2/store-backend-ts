@@ -1,6 +1,5 @@
 import { Response } from "express";
 import JWT from "jsonwebtoken";
-
 const setCookie = async (
   data: { userID: string; userRole: "user" | "admin" },
   res: Response
@@ -18,16 +17,20 @@ const setCookie = async (
     return token;
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, msg: "Server Error" });
+    return res.status(500).json({ success: false, msg: "Server Error" });
   }
 };
 
 function getJwtToken(data: { userID: string; userRole: "user" | "admin" }) {
-  const secretKey: string = process.env.JWT_SECRET_KEY!;
+  const SECRET_KEY = process.env.JWT_SECRET_KEY as string;
 
-  return JWT.sign({ userID: data.userID, userRole: data.userRole }, secretKey, {
-    expiresIn: process.env.JWT_EXPIRES,
-  });
+  return JWT.sign(
+    { userID: data.userID, userRole: data.userRole },
+    SECRET_KEY,
+    {
+      expiresIn: process.env.JWT_EXPIRES,
+    }
+  );
 }
 
 export { setCookie };

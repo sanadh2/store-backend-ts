@@ -1,6 +1,7 @@
 import mongoose, { Schema, model, Document } from "mongoose";
+
 interface Icart extends Document {
-  userID: Schema.Types.ObjectId;
+  user: Schema.Types.ObjectId;
   product: Schema.Types.ObjectId;
   quantity: number;
   createdAt: Date;
@@ -9,13 +10,15 @@ interface Icart extends Document {
 
 const cartSchema = new Schema<Icart>(
   {
-    userID: {
+    user: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: [true, "userID is required"],
     },
     product: {
       type: Schema.Types.ObjectId,
-      ref: "Shoe",
+      ref: "shoe",
+      required: [true, "productID is required"],
     },
     quantity: {
       type: Number,

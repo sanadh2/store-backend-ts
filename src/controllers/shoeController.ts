@@ -109,11 +109,14 @@ export const updateProduct = asyncWrapper(
 );
 
 export const getProductInfo = asyncWrapper(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const { productID } = req.params;
+    const userID = req.userID;
     if (!isValidObjectId(productID))
       return next(setError("Invalid product id", 400));
-    const product = await Shoe.findById(productID);
+    const product = userID
+      ? await Shoe.findByIdAndUpdate(productID, { $inc: { views: 1 } })
+      : await Shoe.findById(productID);
     if (!product) return next(setError("product not found", 400));
     return res
       .status(200)
@@ -140,13 +143,15 @@ export const filtershoes = asyncWrapper(
     } = req.query;
     const queryFilter: Record<string, any> = {};
     if (s) {
+      console.log(s);
       const escapeRegExpSearch = new RegExp(escapeRegExp(s as string), "i");
+      console.log("escapeRegExpSearch is", escapeRegExpSearch);
       queryFilter.$or = [
         {
-          name: { $regex: escapeRegExpSearch, $options: "i" },
+          name: { $regex: escapeRegExpSearch },
         },
-        { brand: { $regex: escapeRegExpSearch, $options: "i" } },
-        { category: { $regex: escapeRegExpSearch, $options: "i" } },
+        { brand: { $regex: escapeRegExpSearch } },
+        { category: { $regex: escapeRegExpSearch } },
       ];
     }
     if (!s && brand) {
@@ -224,5 +229,19 @@ export const filtershoes = asyncWrapper(
       currentPage: pageNumber,
       totalPages: Math.ceil(countProducts / limitValue),
     });
+  }
+);
+
+export const bestSellers = asyncWrapper(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { limit } = req.query;
+    const limitValue =
+      isNumber(limit as string) && parseInt(limit as string) > 0
+        ? parseInt(limit as string)
+        : 10;
+    const products = await Shoe.find().sort({ sold: -1 }).limit(limitValue);
+    return res
+      .status(200)
+      .json({ success: true, products, message: "products found" });
   }
 );
